@@ -1,24 +1,25 @@
-import 'package:flutter/material.dart';
-import 'package:it_support/model/user.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
-class Ticket {
-  int? id;
-  final String issueDescription;
-  final User user;
-  String? requestTime;
-
-  Ticket({
-    this.id,
-    required this.issueDescription,
-    required this.user,
-    this.requestTime,
-  });
-
-  // Para salvar o objeto no banco de dados
-  Map<String, Object?> toMap() => {
-    'id': id,
-    'issueDescription': issueDescription,
-    'userName': user.name,
-    'requestTime': requestTime,
-  };
+class DbHelper {
+  static Future<Database> openConnection() async {
+    var path = await getDatabasesPath();
+    var dbName = 'tickets_database.db'; // Nome do banco de dados atualizado
+    var dbPath = join(path, dbName); // Corrigido a junção do caminho e nome do banco de dados
+    
+    return await openDatabase(
+      dbPath,
+      version: 1,
+      onCreate: (db, version) async {
+        await db.execute(
+          'CREATE TABLE tickets ('
+          'id INTEGER PRIMARY KEY AUTOINCREMENT, '
+          'issueDescription TEXT NOT NULL, '
+          'userName TEXT NOT NULL, '
+          'requestTime TEXT'
+          ');'
+        );
+      },
+    );
+  }
 }
