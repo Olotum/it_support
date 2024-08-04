@@ -26,6 +26,7 @@ class CustomDropdownMenu extends StatelessWidget {
       width: MediaQuery.of(context).size.width - 32,
       label: Text(label),
       initialSelection: list.first,
+      controller: controller,
     );
   }
 }

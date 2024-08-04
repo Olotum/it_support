@@ -1,23 +1,26 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
+//Este arquivo contém a classe DbHelper, que lida com a abertura da conexão com o banco de dados SQLite.
 class DbHelper {
+  // Método estático para abrir a conexão com o banco de dados.
   static Future<Database> openConnection() async {
-    var path = await getDatabasesPath();
-    var dbName = 'tickets_database.db'; // Nome do banco de dados atualizado
-    var dbPath = join(path, dbName); // Corrigido a junção do caminho e nome do banco de dados
-    
-    return await openDatabase(
-      dbPath,
+    // Obtém o caminho do banco de dados.
+    final dbPath = await getDatabasesPath();
+    // Junta o caminho do banco de dados com o nome do banco.
+    final path = join(dbPath, 'it_support.db');
+
+    // Abre o banco de dados e cria a tabela 'tickets' se não existir.
+    return openDatabase(
+      path,
       version: 1,
-      onCreate: (db, version) async {
-        await db.execute(
-          'CREATE TABLE tickets ('
+      onCreate: (db, version) {
+        return db.execute(
+          'CREATE TABLE tickets('
           'id INTEGER PRIMARY KEY AUTOINCREMENT, '
-          'issueDescription TEXT NOT NULL, '
-          'userName TEXT NOT NULL, '
-          'requestTime TEXT'
-          ');'
+          'issueDescription TEXT, '
+          'requesterName TEXT, '
+          'requestTime TEXT)',
         );
       },
     );

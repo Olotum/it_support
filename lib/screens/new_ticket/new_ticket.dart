@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:it_support/model/ticket.dart';
-import 'package:it_support/model/user.dart';
 import 'package:it_support/repository/ticket_repository.dart';
 import 'package:it_support/screens/shared/custom_appbar.dart';
-
+//Este arquivo define a tela para registrar um novo chamado.
 class NewTicket extends StatefulWidget {
   const NewTicket({super.key});
 
@@ -12,20 +11,25 @@ class NewTicket extends StatefulWidget {
 }
 
 class _NewTicketState extends State<NewTicket> {
-  final issueController = TextEditingController();
-  final requesterController = TextEditingController();
-  final requestTimeController =
-      TextEditingController(text: _formatTime(TimeOfDay.now()));
-  final formKey = GlobalKey<FormState>();
+  final issueController = TextEditingController(); // Controlador para o campo de descrição do problema.
+  final requesterController = TextEditingController(); // Controlador para o campo de nome do solicitante.
+  final requestTimeController = TextEditingController(); // Controlador para o campo de horário da solicitação.
+  final formKey = GlobalKey<FormState>(); // Chave para o formulário.
+
+  @override
+  void initState() {
+    super.initState();
+    requestTimeController.text = _formatTime(TimeOfDay.now()); // Define o horário atual no campo de horário da solicitação.
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: customAppBar('Novo chamado'),
+      appBar: customAppBar('Novo chamado'), // AppBar personalizado.
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           if (formKey.currentState!.validate()) {
-            saveTicket();
+            saveTicket(); // Salva o chamado se o formulário for válido.
           }
         },
         child: const Icon(Icons.save),
@@ -82,6 +86,7 @@ class _NewTicketState extends State<NewTicket> {
     );
   }
 
+  // Mostra um diálogo para selecionar o horário.
   Future<String> showTimeDialog() async {
     final time = await showTimePicker(
       context: context,
@@ -98,33 +103,30 @@ class _NewTicketState extends State<NewTicket> {
     return _formatTime(time!);
   }
 
+  // Salva o chamado no banco de dados.
   void saveTicket() async {
-  final user = User.values.firstWhere(
-    (u) => u.name == requesterController.text,
-    orElse: () => User.user1, // Escolha um valor padrão ou trate o caso de erro apropriadamente
-  );
+    final ticket = Ticket(
+      issueDescription: issueController.text,
+      requesterName: requesterController.text,
+      requestTime: requestTimeController.text,
+    );
 
-  final ticket = Ticket(
-    issueDescription: issueController.text,
-    user: user,
-    requestTime: requestTimeController.text,
-  );
-
-  try {
-    final id = await TicketRepository.insert(ticket);
-    var snackBar;
-    if (id > 0) {
-      snackBar = SnackBar(content: Text('O chamado n°$id foi salvo com sucesso!!!'));
-    } else {
-      snackBar = const SnackBar(content: Text('Ops. Houve um erro inesperado!!!'));
+    try {
+      final id = await TicketRepository.insert(ticket);
+      var snackBar;
+      if (id > 0) {
+        snackBar = SnackBar(content: Text('O chamado n°$id foi salvo com sucesso!!!'));
+        Navigator.pop(context, true); // Retorna true para indicar que um novo chamado foi adicionado.
+      } else {
+        snackBar = const SnackBar(content: Text('Ops. Houve um erro inesperado!!!'));
+      }
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } catch (error) {
+      print(error);
     }
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  } catch (error) {
-    print(error);
   }
-}
-}
 
-
-String _formatTime(TimeOfDay time) =>
+  // Formata o horário em uma string.
+  String _formatTime(TimeOfDay time) =>
     "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
+}
